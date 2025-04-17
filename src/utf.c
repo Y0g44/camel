@@ -30,7 +30,7 @@ void CmlUTF_mark(struct CmlUTF_buffer *utf)
     utf->mcurrIndex = utf->currIndex;
 }
 
-void CmlUTF_back(struct CmlUTF_buffer *utf)
+void CmlUTF_ret(struct CmlUTF_buffer *utf)
 {
     utf->offset = utf->moffset;
     utf->currIndex = utf->mcurrIndex;
