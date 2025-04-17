@@ -21,6 +21,7 @@ along with this program; if not, see
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include "utf16.h"
 #include "types.h"
@@ -181,10 +182,11 @@ void CmlUTF16_new(struct CmlUTF_buffer *utf, u_int8_t *buff, size_t offset, size
     utf->endian = endian == 0 ? CmlUTF16_detectEndianness(buff, len) : endian;
     utf->len = len;
 
-    utf->encodeLE = &CmlUTF16_encodeLE;
-    utf->encodeBE = &CmlUTF16_encodeBE;
-    utf->decodeLE = &CmlUTF16_decodeLE;
-    utf->decodeBE = &CmlUTF16_decodeBE;
-    utf->getOctetsLengthBE = &CmlUTF16_getOctetsLengthBE;
-    utf->getOctetsLengthLE = &CmlUTF16_getOctetsLengthLE;
+    utf->codec = malloc(sizeof(struct CmlUTF_codec));
+    utf->codec->encodeLE = &CmlUTF16_encodeLE;
+    utf->codec->encodeBE = &CmlUTF16_encodeBE;
+    utf->codec->decodeLE = &CmlUTF16_decodeLE;
+    utf->codec->decodeBE = &CmlUTF16_decodeBE;
+    utf->codec->getOctetsLengthBE = &CmlUTF16_getOctetsLengthBE;
+    utf->codec->getOctetsLengthLE = &CmlUTF16_getOctetsLengthLE;
 }

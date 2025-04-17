@@ -20,6 +20,7 @@ along with this program; if not, see
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include "types.h"
 #include "utf32.h"
@@ -109,10 +110,11 @@ void CmlUTF32_new(struct CmlUTF_buffer *utf, u_int8_t *buff, size_t offset, size
     utf->endian = endian == 0 ? CmlUTF32_detectEndianness(buff, len) : endian;
     utf->len = len;
 
-    utf->encodeLE = &CmlUTF32_LE_encode;
-    utf->encodeBE = &CmlUTF32_BE_encode;
-    utf->decodeLE = &CmlUTF32_LE_decode;
-    utf->decodeBE = &CmlUTF32_BE_decode;
-    utf->getOctetsLengthBE = &CmlUTF32_getOctetsLength;
-    utf->getOctetsLengthLE = &CmlUTF32_getOctetsLength;
+    utf->codec = malloc(sizeof(struct CmlUTF_codec));
+    utf->codec->encodeBE = &CmlUTF32_BE_encode;
+    utf->codec->encodeLE = &CmlUTF32_LE_encode;
+    utf->codec->decodeLE = &CmlUTF32_LE_decode;
+    utf->codec->decodeBE = &CmlUTF32_BE_decode;
+    utf->codec->getOctetsLengthBE = &CmlUTF32_getOctetsLength;
+    utf->codec->getOctetsLengthLE = &CmlUTF32_getOctetsLength;
 }

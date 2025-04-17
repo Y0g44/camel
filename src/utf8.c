@@ -22,6 +22,7 @@ along with this program; if not, see
 #include "types.h"
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 size_t CmlUTF8_getOctetsLength(u_int8_t *buff, size_t len)
 {
@@ -141,10 +142,11 @@ void CmlUTF8_new(struct CmlUTF_buffer *utf, u_int8_t *buff, size_t offset, size_
     utf->endian = Cml_endianness_BE;
     utf->len = len;
 
-    utf->encodeLE = &CmlUTF8_encode;
-    utf->encodeBE = &CmlUTF8_encode;
-    utf->decodeLE = &CmlUTF8_decode;
-    utf->decodeBE = &CmlUTF8_decode;
-    utf->getOctetsLengthBE = &CmlUTF8_getOctetsLength;
-    utf->getOctetsLengthLE = &CmlUTF8_getOctetsLength;
+    utf->codec = malloc(sizeof(struct CmlUTF_codec));
+    utf->codec->encodeLE = &CmlUTF8_encode;
+    utf->codec->encodeBE = &CmlUTF8_encode;
+    utf->codec->decodeLE = &CmlUTF8_decode;
+    utf->codec->decodeBE = &CmlUTF8_decode;
+    utf->codec->getOctetsLengthBE = &CmlUTF8_getOctetsLength;
+    utf->codec->getOctetsLengthLE = &CmlUTF8_getOctetsLength;
 }

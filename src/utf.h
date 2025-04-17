@@ -24,13 +24,7 @@ along with this program; if not, see
 #include <sys/types.h>
 #include "types.h"
 
-struct CmlUTF_buffer {
-    u_int8_t *buff;
-    size_t currIndex;
-    enum Cml_endianness endian;
-    size_t len;
-    size_t offset;
-
+struct CmlUTF_codec {
     void (*encodeLE)(u_int32_t code, u_int8_t *buff, size_t len);
     void (*encodeBE)(u_int32_t code, u_int8_t *buff, size_t len);
     u_int32_t (*decodeLE)(u_int8_t *buff, size_t len);
@@ -39,6 +33,20 @@ struct CmlUTF_buffer {
     size_t (*getOctetsLengthLE)(u_int8_t *buff, size_t len);
 };
 
+struct CmlUTF_buffer {
+    u_int8_t *buff;
+    size_t currIndex;
+    enum Cml_endianness endian;
+    size_t len;
+    size_t offset;
+    size_t moffset;
+    size_t mcurrIndex;
+
+    struct CmlUTF_codec *codec;
+};
+
+void CmlUTF_mark(struct CmlUTF_buffer *utf);
+void CmlUTF_ret(struct CmlUTF_buffer *utf);
 size_t CmlUTF_len(struct CmlUTF_buffer *utf);
 size_t CmlUTF_next(struct CmlUTF_buffer *utf, size_t n);
 u_int32_t CmlUTF_iter(struct CmlUTF_buffer *utf);

@@ -24,6 +24,18 @@ along with this program; if not, see
 #include "utf.h"
 #include "types.h"
 
+void CmlUTF_mark(struct CmlUTF_buffer *utf)
+{
+    utf->moffset = utf->offset;
+    utf->mcurrIndex = utf->currIndex;
+}
+
+void CmlUTF_back(struct CmlUTF_buffer *utf)
+{
+    utf->offset = utf->moffset;
+    utf->currIndex = utf->mcurrIndex;
+}
+
 size_t CmlUTF_len(struct CmlUTF_buffer *utf)
 {
     size_t len = 0;
@@ -48,9 +60,9 @@ size_t CmlUTF_next(struct CmlUTF_buffer *utf, size_t n)
 
     while (n != 0) {
         if (utf->endian == Cml_endianness_BE) {
-            utf->currIndex += utf->getOctetsLengthBE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
+            utf->currIndex += utf->codec->getOctetsLengthBE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
         } else {
-            utf->currIndex += utf->getOctetsLengthLE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
+            utf->currIndex += utf->codec->getOctetsLengthLE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
         }
 
         if (utf->currIndex > utf->len) {
@@ -83,9 +95,9 @@ u_int32_t CmlUTF_read(struct CmlUTF_buffer *utf)
 
     switch (utf->endian) {
         case Cml_endianness_BE:
-            return utf->decodeBE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
+            return utf->codec->decodeBE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
         case Cml_endianness_LE:
-            return utf->decodeLE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
+            return utf->codec->decodeLE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
     }
 
     return -1;
@@ -100,10 +112,10 @@ size_t CmlUTF_write(struct CmlUTF_buffer *utf, u_int32_t code)
 
     switch (utf->endian) {
         case Cml_endianness_BE:
-            utf->encodeBE(code, utf->buff + utf->currIndex, utf->len - utf->currIndex);
+            utf->codec->encodeBE(code, utf->buff + utf->currIndex, utf->len - utf->currIndex);
             break;
         case Cml_endianness_LE:
-            utf->encodeLE(code, utf->buff + utf->currIndex, utf->len - utf->currIndex);
+            utf->codec->encodeLE(code, utf->buff + utf->currIndex, utf->len - utf->currIndex);
             break;
     }
 
