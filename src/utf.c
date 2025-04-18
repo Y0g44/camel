@@ -45,12 +45,12 @@ size_t CmlUTF_len(struct CmlUTF_buffer *utf)
     utf->currIndex = 0;
 
     while (1) {
+        len++;
         if (CmlUTF_next(utf, 1) == -1 && errno == ERANGE) {
             utf->offset = currOffset;
             utf->currIndex = currIndex;
             return len;
         }
-        len++;
     }
 }
 
@@ -65,7 +65,7 @@ size_t CmlUTF_next(struct CmlUTF_buffer *utf, size_t n)
             utf->currIndex += utf->codec->getOctetsLengthLE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
         }
 
-        if (utf->currIndex > utf->len) {
+        if (utf->currIndex >= utf->len) {
             errno = ERANGE;
             utf->currIndex = utf->len;
             return -1;
