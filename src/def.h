@@ -1,5 +1,5 @@
 /*
-def.h - Type definitions
+def.h - Definitions
 
 Copyright (C) 2025 Yoga
 
@@ -31,10 +31,12 @@ along with this program; if not, see
 #define CML_LONG_VOCAL_SYMBOL '~'
 #define CML_PALATAL_SYMBOL '\''
 #define CML_ESCAPE_SYMBOL '$'
+#define CML_ESCAPE_SYMBOL '$'
 
 typedef u_int32_t *Cml_tokenStream;
 
 enum Cml_tokens {
+    Cml_END_OF_TOKEN,
     Cml_SPACE_TOKEN,
     Cml_VOCAL_A_TOKEN,
     Cml_VOCAL_I_TOKEN,
@@ -90,12 +92,12 @@ enum Cml_tokens {
     Cml_PUNCTUATION_PASALINAN_TOKEN,
     Cml_PUNCTUATION_PAMADA_TOKEN,
     Cml_PUNCTUATION_CARIK_AGUNG_TOKEN,
-    Cml_PUNCTUATION_IDE_TOKENM
+    Cml_PUNCTUATION_IDEM_TOKEN
 };
 
 enum Cml_endianness {
     Cml_endianness_BE,
-    Cml_endianness_LE,
+    Cml_endianness_LE
 };
 
 #endif
