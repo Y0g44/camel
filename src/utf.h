@@ -22,7 +22,7 @@ along with this program; if not, see
 #define __UTF_H
 
 #include <sys/types.h>
-#include "types.h"
+#include "def.h"
 
 struct CmlUTF_codec {
     void (*encodeLE)(u_int32_t code, u_int8_t *buff, size_t len);

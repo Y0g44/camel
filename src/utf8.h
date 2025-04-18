@@ -22,7 +22,7 @@ along with this program; if not, see
 #define __UTF8_H
 
 #include <sys/types.h>
-#include "types.h"
+#include "def.h"
 #include "utf.h"
 
 size_t CmlUTF8_getOctetsLength(u_int8_t *buff, size_t len);

@@ -23,8 +23,8 @@ along with this program; if not, see
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include "def.h"
 #include "utf16.h"
-#include "types.h"
 
 static inline void CmlUTF16_encode32bits(u_int32_t code, u_int16_t *w1, u_int16_t *w2)
 {

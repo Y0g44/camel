@@ -21,8 +21,8 @@ along with this program; if not, see
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include "def.h"
 #include "utf.h"
-#include "types.h"
 
 void CmlUTF_mark(struct CmlUTF_buffer *utf)
 {

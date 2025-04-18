@@ -22,7 +22,7 @@ along with this program; if not, see
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include "types.h"
+#include "def.h"
 #include "utf32.h"
 #include "utf.h"
 
