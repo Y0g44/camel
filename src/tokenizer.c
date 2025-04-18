@@ -21,7 +21,6 @@ along with this program; if not, see
 #include <errno.h>
 #include <sys/types.h>
 #include <stdlib.h>
-#include "def.h"
 #include "utf.h"
 #include "tokenizer.h"
 
@@ -49,7 +48,7 @@ static size_t CmlTokenizer_normalizeUTF(u_int32_t c1, u_int32_t c2, u_int32_t *c
         c1 = 0x00E9;
     }
 
-    if (c2 == CML_RETROFLEX_SYMBOL) {
+    if (c2 == CmlTokenizer_RETROFLEX_SYMBOL) {
         switch (c1) {
             case 'n': *code = 0x1E47;
             break;
@@ -63,7 +62,7 @@ static size_t CmlTokenizer_normalizeUTF(u_int32_t c1, u_int32_t c2, u_int32_t *c
         }
 
         goto skipTwoChars;
-    } else if (c2 == CML_SYLLABIC_CONSONANT_SYMBOL) {
+    } else if (c2 == CmlTokenizer_SYLLABIC_CONSONANT_SYMBOL) {
         switch (c1) {
             case 'l': *code = 0x1E37;
             break;
@@ -73,7 +72,7 @@ static size_t CmlTokenizer_normalizeUTF(u_int32_t c1, u_int32_t c2, u_int32_t *c
         }
 
         goto skipTwoChars;
-    } else if (c2 == CML_LONG_SYLLABIC_CONSONANT_SYMBOL) {
+    } else if (c2 == CmlTokenizer_LONG_SYLLABIC_CONSONANT_SYMBOL) {
         switch (c1) {
             case 'l': *code = 0x1E39;
             break;
@@ -83,7 +82,7 @@ static size_t CmlTokenizer_normalizeUTF(u_int32_t c1, u_int32_t c2, u_int32_t *c
         }
 
         goto skipTwoChars;
-    } else if (c2 == CML_LONG_VOCAL_SYMBOL) {
+    } else if (c2 == CmlTokenizer_LONG_VOCAL_SYMBOL) {
         switch (c1) {
             case 'a': *code = 0x0101;
             break;
@@ -101,7 +100,7 @@ static size_t CmlTokenizer_normalizeUTF(u_int32_t c1, u_int32_t c2, u_int32_t *c
         }
 
         goto skipTwoChars;
-    } else if (c2 == CML_PALATAL_SYMBOL && c1 == 's') {
+    } else if (c2 == CmlTokenizer_PALATAL_SYMBOL && c1 == 's') {
         *code = 0x015B;
         goto skipTwoChars;
     } else if (c1 == c2) {
@@ -125,11 +124,11 @@ static size_t CmlTokenizer_normalizeUTF(u_int32_t c1, u_int32_t c2, u_int32_t *c
     skipTwoChars: return 2;
 }
 
-Cml_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
+CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
 {
     size_t utfLen = CmlUTF_len(utf);
     size_t tokenStreamLen = 0;
-    Cml_tokenStream tokenStream = malloc(sizeof(enum Cml_tokens) * (utfLen + 1));
+    CmlTokenizer_tokenStream tokenStream = malloc(sizeof(enum CmlTokenizer_token) * (utfLen + 1));
 
     for (size_t i = 0; ; i++) {
         u_int32_t c1 = CmlUTF_read(utf);
@@ -139,108 +138,108 @@ Cml_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
 
         u_int32_t c2 = (CmlUTF_next(utf, 1), CmlUTF_read(utf));
         unsigned short isUseTwoChars = CmlTokenizer_normalizeUTF(c1, c2, &c1) == 2;
-        enum Cml_tokens token = Cml_RAW_TOKEN(c1);
-        if (c1 == CML_ESCAPE_SYMBOL && !(c2 == -1 && errno == ERANGE)) {
-            token = Cml_RAW_TOKEN(c2);
+        enum CmlTokenizer_token token = CmlTokenizer_RAW_TOKEN(c1);
+        if (c1 == CmlTokenizer_ESCAPE_SYMBOL && !(c2 == -1 && errno == ERANGE)) {
+            token = CmlTokenizer_RAW_TOKEN(c2);
             isUseTwoChars = 2;
             goto pushToken;
         }
 
         if (c1 >= '0' && c1 <= '9') {
-            token = Cml_NUMBER_0_TOKEN + c1 - '0';
+            token = CmlTokenizer_NUMBER_0_TOKEN + c1 - '0';
         } else {
             switch (c1) {
-                case ' ': token = Cml_SPACE_TOKEN;
+                case ' ': token = CmlTokenizer_SPACE_TOKEN;
                 break;
-                case 'a': token = Cml_VOCAL_A_TOKEN;
+                case 'a': token = CmlTokenizer_VOCAL_A_TOKEN;
                 break;
-                case 'i': token = Cml_VOCAL_I_TOKEN;
+                case 'i': token = CmlTokenizer_VOCAL_I_TOKEN;
                 break;
-                case 'u': token = Cml_VOCAL_U_TOKEN;
+                case 'u': token = CmlTokenizer_VOCAL_U_TOKEN;
                 break;
-                case 'e': token = Cml_VOCAL_SCHWA_TOKEN;
+                case 'e': token = CmlTokenizer_VOCAL_SCHWA_TOKEN;
                 break;
-                case 0x00E9: token = Cml_VOCAL_E_TOKEN;
+                case 0x00E9: token = CmlTokenizer_VOCAL_E_TOKEN;
                 break;
-                case 'o': token = Cml_VOCAL_O_TOKEN;
+                case 'o': token = CmlTokenizer_VOCAL_O_TOKEN;
                 break;
-                case 0x1E37: token = Cml_SYLLABIC_CONSONANT_L_TOKEN;
+                case 0x1E37: token = CmlTokenizer_SYLLABIC_CONSONANT_L_TOKEN;
                 break;
-                case 0x1E5B: token = Cml_SYLLABIC_CONSONANT_R_TOKEN;
+                case 0x1E5B: token = CmlTokenizer_SYLLABIC_CONSONANT_R_TOKEN;
                 break;
-                case 0x0101: token = Cml_LONG_VOCAL_A_TOKEN;
+                case 0x0101: token = CmlTokenizer_LONG_VOCAL_A_TOKEN;
                 break;
-                case 0x012B: token = Cml_LONG_VOCAL_I_TOKEN;
+                case 0x012B: token = CmlTokenizer_LONG_VOCAL_I_TOKEN;
                 break;
-                case 0x016B: token = Cml_LONG_VOCAL_U_TOKEN;
+                case 0x016B: token = CmlTokenizer_LONG_VOCAL_U_TOKEN;
                 break;
-                case 0x0113: token = Cml_LONG_VOCAL_SCHWA_TOKEN;
+                case 0x0113: token = CmlTokenizer_LONG_VOCAL_SCHWA_TOKEN;
                 break;
-                case 0x1E17: token = Cml_LONG_VOCAL_E_TOKEN;
+                case 0x1E17: token = CmlTokenizer_LONG_VOCAL_E_TOKEN;
                 break;
-                case 0x014D: token = Cml_LONG_VOCAL_O_TOKEN;
+                case 0x014D: token = CmlTokenizer_LONG_VOCAL_O_TOKEN;
                 break;
-                case 0x1E39: token = Cml_LONG_SYLLABIC_CONSONANT_L_TOKEN;
+                case 0x1E39: token = CmlTokenizer_LONG_SYLLABIC_CONSONANT_L_TOKEN;
                 break;
-                case 0x1E5D: token = Cml_LONG_SYLLABIC_CONSONANT_R_TOKEN;
+                case 0x1E5D: token = CmlTokenizer_LONG_SYLLABIC_CONSONANT_R_TOKEN;
                 break;
-                case 'h': token = Cml_CONSONANT_H_TOKEN;
+                case 'h': token = CmlTokenizer_CONSONANT_H_TOKEN;
                 break;
-                case 'n': token = Cml_CONSONANT_N_TOKEN;
+                case 'n': token = CmlTokenizer_CONSONANT_N_TOKEN;
                 break;
-                case 'c': token = Cml_CONSONANT_C_TOKEN;
+                case 'c': token = CmlTokenizer_CONSONANT_C_TOKEN;
                 break;
-                case 'r': token = Cml_CONSONANT_R_TOKEN;
+                case 'r': token = CmlTokenizer_CONSONANT_R_TOKEN;
                 break;
-                case 'k': token = Cml_CONSONANT_K_TOKEN;
+                case 'k': token = CmlTokenizer_CONSONANT_K_TOKEN;
                 break;
-                case 'd': token = Cml_CONSONANT_D_TOKEN;
+                case 'd': token = CmlTokenizer_CONSONANT_D_TOKEN;
                 break;
-                case 't': token = Cml_CONSONANT_T_TOKEN;
+                case 't': token = CmlTokenizer_CONSONANT_T_TOKEN;
                 break;
-                case 's': token = Cml_CONSONANT_S_TOKEN;
+                case 's': token = CmlTokenizer_CONSONANT_S_TOKEN;
                 break;
-                case 'w': token = Cml_CONSONANT_W_TOKEN;
+                case 'w': token = CmlTokenizer_CONSONANT_W_TOKEN;
                 break;
-                case 'l': token = Cml_CONSONANT_L_TOKEN;
+                case 'l': token = CmlTokenizer_CONSONANT_L_TOKEN;
                 break;
-                case 'm': token = Cml_CONSONANT_M_TOKEN;
+                case 'm': token = CmlTokenizer_CONSONANT_M_TOKEN;
                 break;
-                case 'g': token = Cml_CONSONANT_G_TOKEN;
+                case 'g': token = CmlTokenizer_CONSONANT_G_TOKEN;
                 break;
-                case 'b': token = Cml_CONSONANT_B_TOKEN;
+                case 'b': token = CmlTokenizer_CONSONANT_B_TOKEN;
                 break;
-                case 'p': token = Cml_CONSONANT_P_TOKEN;
+                case 'p': token = CmlTokenizer_CONSONANT_P_TOKEN;
                 break;
-                case 'j': token = Cml_CONSONANT_J_TOKEN;
+                case 'j': token = CmlTokenizer_CONSONANT_J_TOKEN;
                 break;
-                case 'y': token = Cml_CONSONANT_Y_TOKEN;
+                case 'y': token = CmlTokenizer_CONSONANT_Y_TOKEN;
                 break;
-                case 0x1E47: token = Cml_RETROFLEX_CONSONANT_N_TOKEN;
+                case 0x1E47: token = CmlTokenizer_RETROFLEX_CONSONANT_N_TOKEN;
                 break;
-                case 0x1E0D: token = Cml_RETROFLEX_CONSONANT_D_TOKEN;
+                case 0x1E0D: token = CmlTokenizer_RETROFLEX_CONSONANT_D_TOKEN;
                 break;
-                case 0x1E6D: token = Cml_RETROFLEX_CONSONANT_T_TOKEN;
+                case 0x1E6D: token = CmlTokenizer_RETROFLEX_CONSONANT_T_TOKEN;
                 break;
-                case 0x1E63: token = Cml_RETROFLEX_CONSONANT_S_TOKEN;
+                case 0x1E63: token = CmlTokenizer_RETROFLEX_CONSONANT_S_TOKEN;
                 break;
-                case 0x015B: token = Cml_PALATAL_CONSONANT_S_TOKEN;
+                case 0x015B: token = CmlTokenizer_PALATAL_CONSONANT_S_TOKEN;
                 break;
-                case ',': token = Cml_PUNCTUATION_CARIK_SIKI_TOKEN;
+                case ',': token = CmlTokenizer_PUNCTUATION_CARIK_SIKI_TOKEN;
                 break;
-                case '.': token = Cml_PUNCTUATION_CARIK_KALIH_TOKEN;
+                case '.': token = CmlTokenizer_PUNCTUATION_CARIK_KALIH_TOKEN;
                 break;
-                case ':': token = Cml_PUNCTUATION_CARIK_PAMUNGKAH_TOKEN;
+                case ':': token = CmlTokenizer_PUNCTUATION_CARIK_PAMUNGKAH_TOKEN;
                 break;
-                case 0xF0000: token = Cml_PUNCTUATION_PANTEN_TOKEN;
+                case 0xF0000: token = CmlTokenizer_PUNCTUATION_PANTEN_TOKEN;
                 break;
-                case 0xF0001: token = Cml_PUNCTUATION_PASALINAN_TOKEN;
+                case 0xF0001: token = CmlTokenizer_PUNCTUATION_PASALINAN_TOKEN;
                 break;
-                case 0xF0002: token = Cml_PUNCTUATION_PAMADA_TOKEN;
+                case 0xF0002: token = CmlTokenizer_PUNCTUATION_PAMADA_TOKEN;
                 break;
-                case 0xF0003: token = Cml_PUNCTUATION_CARIK_AGUNG_TOKEN;
+                case 0xF0003: token = CmlTokenizer_PUNCTUATION_CARIK_AGUNG_TOKEN;
                 break;
-                case 0xF0004: token = Cml_PUNCTUATION_IDEM_TOKEN;
+                case 0xF0004: token = CmlTokenizer_PUNCTUATION_IDEM_TOKEN;
                 break;
 
             }
@@ -252,8 +251,8 @@ Cml_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
         CmlUTF_next(utf, isUseTwoChars ? 1 : 0);
     }
 
-    tokenStream[tokenStreamLen] = Cml_END_OF_TOKEN;
+    tokenStream[tokenStreamLen] = CmlTokenizer_END_OF_TOKEN;
     if (utfLen != tokenStreamLen)
-        tokenStream = realloc(tokenStream, sizeof(enum Cml_tokens) * (tokenStreamLen + 1));
+        tokenStream = realloc(tokenStream, sizeof(enum CmlTokenizer_token) * (tokenStreamLen + 1));
     return tokenStream;
 }
