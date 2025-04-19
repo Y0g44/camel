@@ -25,8 +25,8 @@ along with this program; if not, see
 
 #define CmlTokenizer_RAW_TOKEN(c) 57 + c
 #define CmlTokenizer_IS_RAW_TOKEN(c) c >= 57
-#define CmlTokenizer_RETROFLEX_SYMBOL '`'
-#define CmlTokenizer_SYLLABIC_CONSONANT_SYMBOL '!'
+#define CmlTokenizer_RETROFLEX_SYMBOL '^'
+#define CmlTokenizer_SYLLABIC_CONSONANT_SYMBOL '_'
 #define CmlTokenizer_LONG_SYLLABIC_CONSONANT_SYMBOL '*'
 #define CmlTokenizer_LONG_VOCAL_SYMBOL '~'
 #define CmlTokenizer_PALATAL_SYMBOL '\''
