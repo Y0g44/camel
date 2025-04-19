@@ -31,7 +31,8 @@ along with this program; if not, see
 #define CmlTokenizer_LONG_VOCAL_SYMBOL '~'
 #define CmlTokenizer_PALATAL_SYMBOL '\''
 #define CmlTokenizer_ESCAPE_SYMBOL '$'
-#define CmlTokenizer_ESCAPE_SYMBOL '$'
+#define CmlTokenizer_TRANSLITERATION_AS_IS_START_SYMBOL '['
+#define CmlTokenizer_TRANSLITERATION_AS_IS_END_SYMBOL ']'
 
 typedef u_int32_t *CmlTokenizer_tokenStream;
 
@@ -92,9 +93,12 @@ enum CmlTokenizer_token {
     CmlTokenizer_PUNCTUATION_PASALINAN_TOKEN,
     CmlTokenizer_PUNCTUATION_PAMADA_TOKEN,
     CmlTokenizer_PUNCTUATION_CARIK_AGUNG_TOKEN,
-    CmlTokenizer_PUNCTUATION_IDEM_TOKEN
+    CmlTokenizer_PUNCTUATION_IDEM_TOKEN,
+    CmlTokenizer_TRANSLITERATION_AS_IS_START_TOKEN,
+    CmlTokenizer_TRANSLITERATION_AS_IS_END_TOKEN
 };
 
+size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code);
 CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf);
 
 #endif

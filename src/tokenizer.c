@@ -40,12 +40,19 @@ static u_int32_t CmlTokenizer_convertToLowerCase(u_int32_t code)
     return code;
 }
 
-static size_t CmlTokenizer_normalizeUTF(u_int32_t c1, u_int32_t c2, u_int32_t *code)
+size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code)
 {
     *code = c1;
     c1 = CmlTokenizer_convertToLowerCase(c1);
-    if (c1 == 'x') {
+    if (c1 == 'x')
         c1 = 0x00E9;
+
+    if (c1 == CmlTokenizer_TRANSLITERATION_AS_IS_START_SYMBOL) {
+        *code = 0xF0005;
+        goto skipOneChar;
+    } else if (c1 == CmlTokenizer_TRANSLITERATION_AS_IS_END_SYMBOL) {
+        *code = 0xF0006;
+        goto skipOneChar;
     }
 
     if (c2 == CmlTokenizer_RETROFLEX_SYMBOL) {
@@ -132,14 +139,13 @@ CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
 
     for (size_t i = 0; ; i++) {
         u_int32_t c1 = CmlUTF_read(utf);
-        if (c1 == -1 && errno == ERANGE) {
+        if (c1 == -1 && errno == ERANGE)
             break;
-        }
 
         u_int32_t c2 = (CmlUTF_next(utf, 1), CmlUTF_read(utf));
-        unsigned short isUseTwoChars = CmlTokenizer_normalizeUTF(c1, c2, &c1) == 2;
+        unsigned short isUseTwoChars = CmlTokenizer_preprocess(c1, c2, &c1) == 2;
         enum CmlTokenizer_token token = CmlTokenizer_RAW_TOKEN(c1);
-        if (c1 == CmlTokenizer_ESCAPE_SYMBOL && !(c2 == -1 && errno == ERANGE)) {
+        if (c1 == CmlTokenizer_ESCAPE_SYMBOL) {
             token = CmlTokenizer_RAW_TOKEN(c2);
             isUseTwoChars = 2;
             goto pushToken;
@@ -241,7 +247,10 @@ CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
                 break;
                 case 0xF0004: token = CmlTokenizer_PUNCTUATION_IDEM_TOKEN;
                 break;
-
+                case 0xF0005: token = CmlTokenizer_TRANSLITERATION_AS_IS_START_TOKEN;
+                break;
+                case 0xF0006: token = CmlTokenizer_TRANSLITERATION_AS_IS_END_TOKEN;
+                break;
             }
         }
 
@@ -252,7 +261,7 @@ CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
     }
 
     tokenStream[tokenStreamLen] = CmlTokenizer_END_OF_TOKEN;
-    if (utfLen != tokenStreamLen)
-        tokenStream = realloc(tokenStream, sizeof(enum CmlTokenizer_token) * (tokenStreamLen + 1));
-    return tokenStream;
+    return utfLen != tokenStreamLen
+        ? realloc(tokenStream, sizeof(enum CmlTokenizer_token) * (tokenStreamLen + 1))
+        : tokenStream;
 }
