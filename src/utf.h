@@ -45,8 +45,6 @@ struct CmlUTF_Buffer {
     struct CmlUTF_Codec *codec;
 };
 
-void CmlUTF_mark(struct CmlUTF_Buffer *p_utf);
-void CmlUTF_ret(struct CmlUTF_Buffer *p_utf);
 size_t CmlUTF_len(struct CmlUTF_Buffer *p_utf);
 size_t CmlUTF_next(struct CmlUTF_Buffer *p_utf, size_t n);
 u_int32_t CmlUTF_iter(struct CmlUTF_Buffer *p_utf);
