@@ -25,12 +25,12 @@ along with this program; if not, see
 #include "def.h"
 #include "utf.h"
 
-size_t CmlUTF32_getOctetsLength(u_int8_t *buff, size_t len);
-void CmlUTF32_LE_encode(u_int32_t code, u_int8_t *buff, size_t len);
-u_int32_t CmlUTF32_LE_decode(u_int8_t *buff, size_t len);
-void CmlUTF32_BE_encode(u_int32_t code, u_int8_t *buff, size_t len);
-u_int32_t CmlUTF32_BE_decode(u_int8_t *buff, size_t len);
-enum Cml_endianness CmlUTF32_detectEndianness(u_int8_t *buff, size_t len);
-void CmlUTF32_new(struct CmlUTF_buffer *utf, u_int8_t *buff, size_t offset, size_t len, enum Cml_endianness endian);
+size_t CmlUTF32_getOctetsLength(u_int8_t *p_buff, size_t len);
+void CmlUTF32_LE_encode(u_int32_t code, u_int8_t *p_buff, size_t len);
+u_int32_t CmlUTF32_LE_decode(u_int8_t *p_buff, size_t len);
+void CmlUTF32_BE_encode(u_int32_t code, u_int8_t *p_buff, size_t len);
+u_int32_t CmlUTF32_BE_decode(u_int8_t *p_buff, size_t len);
+enum Cml_Endianness CmlUTF32_detectEndianness(u_int8_t *p_buff, size_t len);
+void CmlUTF32_new(struct CmlUTF_Buffer *p_utf, u_int8_t *p_buff, size_t offset, size_t len, enum Cml_Endianness endian);
 
 #endif

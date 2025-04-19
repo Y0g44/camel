@@ -34,9 +34,9 @@ along with this program; if not, see
 #define CmlTokenizer_TRANSLITERATION_AS_IS_START_SYMBOL '['
 #define CmlTokenizer_TRANSLITERATION_AS_IS_END_SYMBOL ']'
 
-typedef u_int32_t *CmlTokenizer_tokenStream;
+typedef u_int32_t *CmlTokenizer_TokenStream;
 
-enum CmlTokenizer_token {
+enum CmlTokenizer_Token {
     CmlTokenizer_END_OF_TOKEN,
     CmlTokenizer_SPACE_TOKEN,
     CmlTokenizer_VOCAL_A_TOKEN,
@@ -98,7 +98,7 @@ enum CmlTokenizer_token {
     CmlTokenizer_TRANSLITERATION_AS_IS_END_TOKEN
 };
 
-size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code);
-CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf);
+size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *p_code);
+CmlTokenizer_TokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_Buffer *p_utf);
 
 #endif

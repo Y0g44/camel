@@ -23,9 +23,9 @@ along with this program; if not, see
 
 #include <sys/types.h>
 
-enum Cml_endianness {
-    Cml_endianness_BE,
-    Cml_endianness_LE
+enum Cml_Endianness {
+    Cml_BE_ENDIANNESS,
+    Cml_LE_ENDIANNESS
 };
 
 #endif

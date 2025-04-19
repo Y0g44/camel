@@ -25,9 +25,9 @@ along with this program; if not, see
 #include "def.h"
 #include "utf.h"
 
-size_t CmlUTF8_getOctetsLength(u_int8_t *buff, size_t len);
-void CmlUTF8_encode(u_int32_t code, u_int8_t *buff, size_t len);
-u_int32_t CmlUTF8_decode(u_int8_t *buff, size_t len);
-void CmlUTF8_new(struct CmlUTF_buffer *utf, u_int8_t *buff, size_t offset, size_t len);
+size_t CmlUTF8_getOctetsLength(u_int8_t *p_buff, size_t len);
+void CmlUTF8_encode(u_int32_t code, u_int8_t *p_buff, size_t len);
+u_int32_t CmlUTF8_decode(u_int8_t *p_buff, size_t len);
+void CmlUTF8_new(struct CmlUTF_Buffer *p_utf, u_int8_t *p_buff, size_t offset, size_t len);
 
 #endif

@@ -24,50 +24,38 @@ along with this program; if not, see
 #include "def.h"
 #include "utf.h"
 
-void CmlUTF_mark(struct CmlUTF_buffer *utf)
-{
-    utf->moffset = utf->offset;
-    utf->mcurrIndex = utf->currIndex;
-}
-
-void CmlUTF_ret(struct CmlUTF_buffer *utf)
-{
-    utf->offset = utf->moffset;
-    utf->currIndex = utf->mcurrIndex;
-}
-
-size_t CmlUTF_len(struct CmlUTF_buffer *utf)
+size_t CmlUTF_len(struct CmlUTF_Buffer *p_utf)
 {
     size_t len = 0;
-    size_t currOffset = utf->offset;
-    u_int8_t currIndex = utf->currIndex;
-    utf->offset = 0;
-    utf->currIndex = 0;
+    size_t currOffset = p_utf->offset;
+    u_int8_t currIndex = p_utf->currIndex;
+    p_utf->offset = 0;
+    p_utf->currIndex = 0;
 
     while (1) {
         len++;
-        if (CmlUTF_next(utf, 1) == -1 && errno == ERANGE) {
-            utf->offset = currOffset;
-            utf->currIndex = currIndex;
+        if (CmlUTF_next(p_utf, 1) == -1 && errno == ERANGE) {
+            p_utf->offset = currOffset;
+            p_utf->currIndex = currIndex;
             return len;
         }
     }
 }
 
-size_t CmlUTF_next(struct CmlUTF_buffer *utf, size_t n)
+size_t CmlUTF_next(struct CmlUTF_Buffer *p_utf, size_t n)
 {
-    size_t offset = utf->offset;
+    size_t offset = p_utf->offset;
 
     while (n != 0) {
-        if (utf->endian == Cml_endianness_BE) {
-            utf->currIndex += utf->codec->getOctetsLengthBE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
+        if (p_utf->endian == Cml_BE_ENDIANNESS) {
+            p_utf->currIndex += p_utf->codec->getOctetsLengthBE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
         } else {
-            utf->currIndex += utf->codec->getOctetsLengthLE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
+            p_utf->currIndex += p_utf->codec->getOctetsLengthLE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
         }
 
-        if (utf->currIndex >= utf->len) {
+        if (p_utf->currIndex >= p_utf->len) {
             errno = ERANGE;
-            utf->currIndex = utf->len;
+            p_utf->currIndex = p_utf->len;
             return -1;
         }
 
@@ -75,49 +63,49 @@ size_t CmlUTF_next(struct CmlUTF_buffer *utf, size_t n)
         n--;
     }
 
-    utf->currIndex = utf->currIndex;
-    utf->offset = offset;
+    p_utf->currIndex = p_utf->currIndex;
+    p_utf->offset = offset;
     return offset;
 }
 
-u_int32_t CmlUTF_iter(struct CmlUTF_buffer *utf)
+u_int32_t CmlUTF_iter(struct CmlUTF_Buffer *p_utf)
 {
-    u_int32_t code = CmlUTF_read(utf);
-    return CmlUTF_next(utf, 1) == -1 && errno == ERANGE ? -1 : code;
+    u_int32_t code = CmlUTF_read(p_utf);
+    return CmlUTF_next(p_utf, 1) == -1 && errno == ERANGE ? -1 : code;
 }
 
-u_int32_t CmlUTF_read(struct CmlUTF_buffer *utf)
+u_int32_t CmlUTF_read(struct CmlUTF_Buffer *p_utf)
 {
-    if (utf->currIndex >= utf->len) {
+    if (p_utf->currIndex >= p_utf->len) {
         errno = ERANGE;
         return -1;
     }
 
-    switch (utf->endian) {
-        case Cml_endianness_BE:
-            return utf->codec->decodeBE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
-        case Cml_endianness_LE:
-            return utf->codec->decodeLE(utf->buff + utf->currIndex, utf->len - utf->currIndex);
+    switch (p_utf->endian) {
+        case Cml_BE_ENDIANNESS:
+            return p_utf->codec->decodeBE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
+        case Cml_LE_ENDIANNESS:
+            return p_utf->codec->decodeLE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
     }
 
     return -1;
 }
 
-size_t CmlUTF_write(struct CmlUTF_buffer *utf, u_int32_t code)
+size_t CmlUTF_write(struct CmlUTF_Buffer *p_utf, u_int32_t code)
 {
-    if (utf->currIndex >= utf->len) {
+    if (p_utf->currIndex >= p_utf->len) {
         errno = ERANGE;
         return -1;
     }
 
-    switch (utf->endian) {
-        case Cml_endianness_BE:
-            utf->codec->encodeBE(code, utf->buff + utf->currIndex, utf->len - utf->currIndex);
+    switch (p_utf->endian) {
+        case Cml_BE_ENDIANNESS:
+            p_utf->codec->encodeBE(code, p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
             break;
-        case Cml_endianness_LE:
-            utf->codec->encodeLE(code, utf->buff + utf->currIndex, utf->len - utf->currIndex);
+        case Cml_LE_ENDIANNESS:
+            p_utf->codec->encodeLE(code, p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
             break;
     }
 
-    return utf->offset;
+    return p_utf->offset;
 }

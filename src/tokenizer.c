@@ -40,30 +40,30 @@ static u_int32_t CmlTokenizer_convertToLowerCase(u_int32_t code)
     return code;
 }
 
-size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code)
+size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *p_code)
 {
-    *code = c1;
+    *p_code = c1;
     c1 = CmlTokenizer_convertToLowerCase(c1);
     if (c1 == 'x')
         c1 = 0x00E9;
 
     if (c1 == CmlTokenizer_TRANSLITERATION_AS_IS_START_SYMBOL) {
-        *code = 0xF0005;
+        *p_code = 0xF0005;
         goto skipOneChar;
     } else if (c1 == CmlTokenizer_TRANSLITERATION_AS_IS_END_SYMBOL) {
-        *code = 0xF0006;
+        *p_code = 0xF0006;
         goto skipOneChar;
     }
 
     if (c2 == CmlTokenizer_RETROFLEX_SYMBOL) {
         switch (c1) {
-            case 'n': *code = 0x1E47;
+            case 'n': *p_code = 0x1E47;
             break;
-            case 'd': *code = 0x1E0D;
+            case 'd': *p_code = 0x1E0D;
             break;
-            case 't': *code = 0x1E6D;
+            case 't': *p_code = 0x1E6D;
             break;
-            case 's': *code = 0x1E63;
+            case 's': *p_code = 0x1E63;
             break;
             default: goto skipOneChar;
         }
@@ -71,9 +71,9 @@ size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code)
         goto skipTwoChars;
     } else if (c2 == CmlTokenizer_SYLLABIC_CONSONANT_SYMBOL) {
         switch (c1) {
-            case 'l': *code = 0x1E37;
+            case 'l': *p_code = 0x1E37;
             break;
-            case 'r': *code = 0x1E5B;
+            case 'r': *p_code = 0x1E5B;
             break;
             default: goto skipOneChar;
         }
@@ -81,9 +81,9 @@ size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code)
         goto skipTwoChars;
     } else if (c2 == CmlTokenizer_LONG_SYLLABIC_CONSONANT_SYMBOL) {
         switch (c1) {
-            case 'l': *code = 0x1E39;
+            case 'l': *p_code = 0x1E39;
             break;
-            case 'r': *code = 0x1E5D;
+            case 'r': *p_code = 0x1E5D;
             break;
             default: goto skipOneChar;
         }
@@ -91,36 +91,36 @@ size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code)
         goto skipTwoChars;
     } else if (c2 == CmlTokenizer_LONG_VOCAL_SYMBOL) {
         switch (c1) {
-            case 'a': *code = 0x0101;
+            case 'a': *p_code = 0x0101;
             break;
-            case 'i': *code = 0x012B;
+            case 'i': *p_code = 0x012B;
             break;
-            case 'u': *code = 0x016B;
+            case 'u': *p_code = 0x016B;
             break;
-            case 'e': *code = 0x0113;
+            case 'e': *p_code = 0x0113;
             break;
-            case 0x00E9: *code = 0x1E17;
+            case 0x00E9: *p_code = 0x1E17;
             break;
-            case 'o': *code = 0x014D;
+            case 'o': *p_code = 0x014D;
             break;
             default: goto skipOneChar;
         }
 
         goto skipTwoChars;
     } else if (c2 == CmlTokenizer_PALATAL_SYMBOL && c1 == 's') {
-        *code = 0x015B;
+        *p_code = 0x015B;
         goto skipTwoChars;
     } else if (c1 == c2) {
         switch (c1) {
-            case '+': *code = 0xF0000;
+            case '+': *p_code = 0xF0000;
             break;
-            case '-': *code = 0xF0001;
+            case '-': *p_code = 0xF0001;
             break;
-            case '#': *code = 0xF0002;
+            case '#': *p_code = 0xF0002;
             break;
-            case '/': *code = 0xF0003;
+            case '/': *p_code = 0xF0003;
             break;
-            case '=': *code = 0xF0004;
+            case '=': *p_code = 0xF0004;
             break;
             default: goto skipOneChar;
         }
@@ -131,20 +131,20 @@ size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *code)
     skipTwoChars: return 2;
 }
 
-CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
+CmlTokenizer_TokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_Buffer *p_utf)
 {
-    size_t utfLen = CmlUTF_len(utf);
+    size_t utfLen = CmlUTF_len(p_utf);
     size_t tokenStreamLen = 0;
-    CmlTokenizer_tokenStream tokenStream = malloc(sizeof(enum CmlTokenizer_token) * (utfLen + 1));
+    CmlTokenizer_TokenStream tokenStream = malloc(sizeof(enum CmlTokenizer_Token) * (utfLen + 1));
 
     for (size_t i = 0; ; i++) {
-        u_int32_t c1 = CmlUTF_read(utf);
+        u_int32_t c1 = CmlUTF_read(p_utf);
         if (c1 == -1 && errno == ERANGE)
             break;
 
-        u_int32_t c2 = (CmlUTF_next(utf, 1), CmlUTF_read(utf));
+        u_int32_t c2 = (CmlUTF_next(p_utf, 1), CmlUTF_read(p_utf));
         unsigned short isUseTwoChars = CmlTokenizer_preprocess(c1, c2, &c1) == 2;
-        enum CmlTokenizer_token token = CmlTokenizer_RAW_TOKEN(c1);
+        enum CmlTokenizer_Token token = CmlTokenizer_RAW_TOKEN(c1);
         if (c1 == CmlTokenizer_ESCAPE_SYMBOL) {
             token = CmlTokenizer_RAW_TOKEN(c2);
             isUseTwoChars = 2;
@@ -257,11 +257,11 @@ CmlTokenizer_tokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_buffer *utf)
         pushToken:
         tokenStream[i] = token;
         tokenStreamLen++;
-        CmlUTF_next(utf, isUseTwoChars ? 1 : 0);
+        CmlUTF_next(p_utf, isUseTwoChars ? 1 : 0);
     }
 
     tokenStream[tokenStreamLen] = CmlTokenizer_END_OF_TOKEN;
     return utfLen != tokenStreamLen
-        ? realloc(tokenStream, sizeof(enum CmlTokenizer_token) * (tokenStreamLen + 1))
+        ? realloc(tokenStream, sizeof(enum CmlTokenizer_Token) * (tokenStreamLen + 1))
         : tokenStream;
 }
