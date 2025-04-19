@@ -18,13 +18,18 @@ along with this program; if not, see
 <https://www.gnu.org/licenses/>.
 */
 
+#include <stddef.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include "def.h"
+#include "utf.h"
 #include "utf8.h"
 
-size_t CmlUTF8_getOctetsLength(u_int8_t *p_buff, size_t len)
+__Cml_INLINE int CmlUTF8_detectBOM(unsigned char *p_buff, size_t len) {
+    return len >= 3 && p_buff[0] == 0xEF && p_buff[1] == 0xBB && p_buff[2] == 0xBF;
+}
+
+size_t CmlUTF8_getOctetsLength(unsigned char *p_buff, size_t len)
 {
     size_t octetsLength = 0;
     if (!(p_buff[0] & 0x80)) {
@@ -40,13 +45,13 @@ size_t CmlUTF8_getOctetsLength(u_int8_t *p_buff, size_t len)
     return len < octetsLength ? 0 : octetsLength;
 }
 
-void CmlUTF8_encode(u_int32_t code, u_int8_t *p_buff, size_t len)
+void CmlUTF8_encode(CmlUTF_Code code, unsigned char *p_buff, size_t len)
 {
     if (len == 0) {
         goto bufferTooSmallError;
     }
 
-    u_int8_t b1 = 0;
+    unsigned char b1 = 0;
     size_t octetsLength = 1;
 
     if (code < 0x80) {
@@ -71,7 +76,8 @@ void CmlUTF8_encode(u_int32_t code, u_int8_t *p_buff, size_t len)
     }
 
     p_buff[0] = b1;
-    for (size_t i = 1; i < octetsLength; i++) {
+    size_t i = 1;
+    for (; i < octetsLength; i++) {
         p_buff[i] = 0x80 | ((code >> (6 * (octetsLength - 1 - i))) & 0x3F);
     }
 
@@ -82,13 +88,13 @@ void CmlUTF8_encode(u_int32_t code, u_int8_t *p_buff, size_t len)
     return;
 }
 
-u_int32_t CmlUTF8_decode(u_int8_t *p_buff, size_t len)
+CmlUTF_Code CmlUTF8_decode(unsigned char *p_buff, size_t len)
 {
     if (len == 0) {
         goto bufferTooSmallError;
     }
 
-    u_int32_t code = 0;
+    CmlUTF_Code code = 0;
     size_t octetsLength = CmlUTF8_getOctetsLength(p_buff, len);
     switch (octetsLength) {
         case 1: code = p_buff[0];
@@ -106,7 +112,8 @@ u_int32_t CmlUTF8_decode(u_int8_t *p_buff, size_t len)
         goto bufferTooSmallError;
     }
 
-    for (size_t i = 1; i < octetsLength; i++) {
+    size_t i = 1;
+    for (; i < octetsLength; i++) {
         if ((p_buff[i] & 0xC0) != 0x80) {
             goto invalidUTF8Error;
         }
@@ -124,12 +131,7 @@ u_int32_t CmlUTF8_decode(u_int8_t *p_buff, size_t len)
     return -1;
 }
 
-inline int CmlUTF8_detectBOM(u_int8_t *p_buff, size_t len)
-{
-    return len >= 3 && p_buff[0] == 0xEF && p_buff[1] == 0xBB && p_buff[2] == 0xBF;
-}
-
-void CmlUTF8_new(struct CmlUTF_Buffer *p_utf, u_int8_t *p_buff, size_t offset, size_t len)
+void CmlUTF8_new(struct CmlUTF_Buffer *p_utf, unsigned char *p_buff, size_t offset, size_t len)
 {
     if (p_buff == NULL) {
         errno = EINVAL;
@@ -139,7 +141,7 @@ void CmlUTF8_new(struct CmlUTF_Buffer *p_utf, u_int8_t *p_buff, size_t offset, s
     p_utf->buff = p_buff;
     p_utf->currIndex = 0;
     p_utf->offset = offset;
-    p_utf->endian = Cml_BE_ENDIANNESS;
+    p_utf->endian = Cml_BE;
     p_utf->len = len;
 
     p_utf->codec = malloc(sizeof(struct CmlUTF_Codec));

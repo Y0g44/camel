@@ -21,11 +21,15 @@ along with this program; if not, see
 #ifndef __DEF_H
 #define __DEF_H
 
-#include <sys/types.h>
+#if __STDC__ != 1
+#define __Cml_INLINE inline
+#else
+#define __Cml_INLINE
+#endif
 
 enum Cml_Endianness {
-    Cml_BE_ENDIANNESS,
-    Cml_LE_ENDIANNESS
+    Cml_BE,
+    Cml_LE
 };
 
 #endif

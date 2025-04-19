@@ -18,9 +18,8 @@ along with this program; if not, see
 <https://www.gnu.org/licenses/>.
 */
 
+#include <stddef.h>
 #include <errno.h>
-#include <stdio.h>
-#include <sys/types.h>
 #include "def.h"
 #include "utf.h"
 
@@ -28,7 +27,7 @@ size_t CmlUTF_len(struct CmlUTF_Buffer *p_utf)
 {
     size_t len = 0;
     size_t currOffset = p_utf->offset;
-    u_int8_t currIndex = p_utf->currIndex;
+    size_t currIndex = p_utf->currIndex;
     p_utf->offset = 0;
     p_utf->currIndex = 0;
 
@@ -47,7 +46,7 @@ size_t CmlUTF_next(struct CmlUTF_Buffer *p_utf, size_t n)
     size_t offset = p_utf->offset;
 
     while (n != 0) {
-        if (p_utf->endian == Cml_BE_ENDIANNESS) {
+        if (p_utf->endian == Cml_BE) {
             p_utf->currIndex += p_utf->codec->getOctetsLengthBE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
         } else {
             p_utf->currIndex += p_utf->codec->getOctetsLengthLE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
@@ -68,13 +67,13 @@ size_t CmlUTF_next(struct CmlUTF_Buffer *p_utf, size_t n)
     return offset;
 }
 
-u_int32_t CmlUTF_iter(struct CmlUTF_Buffer *p_utf)
+CmlUTF_Code CmlUTF_iter(struct CmlUTF_Buffer *p_utf)
 {
-    u_int32_t code = CmlUTF_read(p_utf);
+    CmlUTF_Code code = CmlUTF_read(p_utf);
     return CmlUTF_next(p_utf, 1) == -1 && errno == ERANGE ? -1 : code;
 }
 
-u_int32_t CmlUTF_read(struct CmlUTF_Buffer *p_utf)
+CmlUTF_Code CmlUTF_read(struct CmlUTF_Buffer *p_utf)
 {
     if (p_utf->currIndex >= p_utf->len) {
         errno = ERANGE;
@@ -82,16 +81,16 @@ u_int32_t CmlUTF_read(struct CmlUTF_Buffer *p_utf)
     }
 
     switch (p_utf->endian) {
-        case Cml_BE_ENDIANNESS:
+        case Cml_BE:
             return p_utf->codec->decodeBE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
-        case Cml_LE_ENDIANNESS:
+        case Cml_LE:
             return p_utf->codec->decodeLE(p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
     }
 
     return -1;
 }
 
-size_t CmlUTF_write(struct CmlUTF_Buffer *p_utf, u_int32_t code)
+size_t CmlUTF_write(struct CmlUTF_Buffer *p_utf, CmlUTF_Code code)
 {
     if (p_utf->currIndex >= p_utf->len) {
         errno = ERANGE;
@@ -99,10 +98,10 @@ size_t CmlUTF_write(struct CmlUTF_Buffer *p_utf, u_int32_t code)
     }
 
     switch (p_utf->endian) {
-        case Cml_BE_ENDIANNESS:
+        case Cml_BE:
             p_utf->codec->encodeBE(code, p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
             break;
-        case Cml_LE_ENDIANNESS:
+        case Cml_LE:
             p_utf->codec->encodeLE(code, p_utf->buff + p_utf->currIndex, p_utf->len - p_utf->currIndex);
             break;
     }

@@ -21,34 +21,35 @@ along with this program; if not, see
 #ifndef __UTF_H
 #define __UTF_H
 
-#include <sys/types.h>
+#include <stddef.h>
 #include "def.h"
 
+typedef unsigned int CmlUTF_Code;
+
 struct CmlUTF_Codec {
-    void (*encodeLE)(u_int32_t code, u_int8_t *p_buff, size_t len);
-    void (*encodeBE)(u_int32_t code, u_int8_t *p_buff, size_t len);
-    u_int32_t (*decodeLE)(u_int8_t *p_buff, size_t len);
-    u_int32_t (*decodeBE)(u_int8_t *p_buff, size_t len);
-    size_t (*getOctetsLengthBE)(u_int8_t *p_buff, size_t len);
-    size_t (*getOctetsLengthLE)(u_int8_t *p_buff, size_t len);
+    void (*encodeLE)(CmlUTF_Code code, unsigned char *p_buff, size_t len);
+    void (*encodeBE)(CmlUTF_Code code, unsigned char *p_buff, size_t len);
+    CmlUTF_Code (*decodeLE)(unsigned char *p_buff, size_t len);
+    CmlUTF_Code (*decodeBE)(unsigned char *p_buff, size_t len);
+    size_t (*getOctetsLengthBE)(unsigned char *p_buff, size_t len);
+    size_t (*getOctetsLengthLE)(unsigned char *p_buff, size_t len);
 };
 
 struct CmlUTF_Buffer {
-    u_int8_t *buff;
+    unsigned char *buff;
     size_t currIndex;
     enum Cml_Endianness endian;
     size_t len;
     size_t offset;
     size_t moffset;
     size_t mcurrIndex;
-
     struct CmlUTF_Codec *codec;
 };
 
 size_t CmlUTF_len(struct CmlUTF_Buffer *p_utf);
 size_t CmlUTF_next(struct CmlUTF_Buffer *p_utf, size_t n);
-u_int32_t CmlUTF_iter(struct CmlUTF_Buffer *p_utf);
-u_int32_t CmlUTF_read(struct CmlUTF_Buffer *p_utf);
-size_t CmlUTF_write(struct CmlUTF_Buffer *p_utf, u_int32_t code);
+CmlUTF_Code CmlUTF_iter(struct CmlUTF_Buffer *p_utf);
+CmlUTF_Code CmlUTF_read(struct CmlUTF_Buffer *p_utf);
+size_t CmlUTF_write(struct CmlUTF_Buffer *p_utf, CmlUTF_Code code);
 
 #endif

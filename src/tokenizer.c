@@ -1,5 +1,5 @@
 /*
-tokenizer.c - Tokenizer
+tokenizer.c - Generate tokens for the transliteration process
 
 Copyright (C) 2025 Yoga
 
@@ -18,13 +18,13 @@ along with this program; if not, see
 <https://www.gnu.org/licenses/>.
 */
 
+#include <stddef.h>
 #include <errno.h>
-#include <sys/types.h>
 #include <stdlib.h>
 #include "utf.h"
 #include "tokenizer.h"
 
-static u_int32_t CmlTokenizer_convertToLowerCase(u_int32_t code)
+static CmlUTF_Code CmlTokenizer_convertToLowerCase(CmlUTF_Code code)
 {
     if (code >= 0x0041 && code <= 0x005A)
         return code + 32;
@@ -40,7 +40,7 @@ static u_int32_t CmlTokenizer_convertToLowerCase(u_int32_t code)
     return code;
 }
 
-size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *p_code)
+size_t CmlTokenizer_preprocess(CmlUTF_Code c1, CmlUTF_Code c2, CmlUTF_Code *p_code)
 {
     *p_code = c1;
     c1 = CmlTokenizer_convertToLowerCase(c1);
@@ -137,12 +137,13 @@ CmlTokenizer_TokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_Buffer *p_ut
     size_t tokenStreamLen = 0;
     CmlTokenizer_TokenStream tokenStream = malloc(sizeof(enum CmlTokenizer_Token) * (utfLen + 1));
 
-    for (size_t i = 0; ; i++) {
-        u_int32_t c1 = CmlUTF_read(p_utf);
+    size_t i = 0;
+    while (1) {
+        CmlUTF_Code c1 = CmlUTF_read(p_utf);
         if (c1 == -1 && errno == ERANGE)
             break;
 
-        u_int32_t c2 = (CmlUTF_next(p_utf, 1), CmlUTF_read(p_utf));
+        CmlUTF_Code c2 = (CmlUTF_next(p_utf, 1), CmlUTF_read(p_utf));
         unsigned short isUseTwoChars = CmlTokenizer_preprocess(c1, c2, &c1) == 2;
         enum CmlTokenizer_Token token = CmlTokenizer_RAW_TOKEN(c1);
         if (c1 == CmlTokenizer_ESCAPE_SYMBOL) {
@@ -258,6 +259,7 @@ CmlTokenizer_TokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_Buffer *p_ut
         tokenStream[i] = token;
         tokenStreamLen++;
         CmlUTF_next(p_utf, isUseTwoChars ? 1 : 0);
+        i++;
     }
 
     tokenStream[tokenStreamLen] = CmlTokenizer_END_OF_TOKEN;

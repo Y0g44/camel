@@ -1,5 +1,5 @@
 /*
-tokenizer.h - Tokenizer
+tokenizer.h - Generate tokens for the transliteration process
 
 Copyright (C) 2025 Yoga
 
@@ -23,8 +23,8 @@ along with this program; if not, see
 
 #include "utf.h"
 
-#define CmlTokenizer_RAW_TOKEN(c) 57 + c
-#define CmlTokenizer_IS_RAW_TOKEN(c) c >= 57
+#define CmlTokenizer_RAW_TOKEN(c) 61 + c
+#define CmlTokenizer_IS_RAW_TOKEN(c) c >= 61
 #define CmlTokenizer_RETROFLEX_SYMBOL '^'
 #define CmlTokenizer_SYLLABIC_CONSONANT_SYMBOL '_'
 #define CmlTokenizer_LONG_SYLLABIC_CONSONANT_SYMBOL '*'
@@ -34,10 +34,10 @@ along with this program; if not, see
 #define CmlTokenizer_TRANSLITERATION_AS_IS_START_SYMBOL '['
 #define CmlTokenizer_TRANSLITERATION_AS_IS_END_SYMBOL ']'
 
-typedef u_int32_t *CmlTokenizer_TokenStream;
+typedef unsigned int *CmlTokenizer_TokenStream;
 
 enum CmlTokenizer_Token {
-    CmlTokenizer_END_OF_TOKEN,
+    CmlTokenizer_END_OF_TOKEN = 1,
     CmlTokenizer_SPACE_TOKEN,
     CmlTokenizer_VOCAL_A_TOKEN,
     CmlTokenizer_VOCAL_I_TOKEN,
@@ -98,7 +98,7 @@ enum CmlTokenizer_Token {
     CmlTokenizer_TRANSLITERATION_AS_IS_END_TOKEN
 };
 
-size_t CmlTokenizer_preprocess(u_int32_t c1, u_int32_t c2, u_int32_t *p_code);
+size_t CmlTokenizer_preprocess(CmlUTF_Code c1, CmlUTF_Code c2, CmlUTF_Code *p_code);
 CmlTokenizer_TokenStream CmlTokenizer_tokenizationUTF(struct CmlUTF_Buffer *p_utf);
 
 #endif

@@ -18,20 +18,19 @@ along with this program; if not, see
 <https://www.gnu.org/licenses/>.
 */
 
-#include <errno.h>
 #include <stddef.h>
+#include <errno.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include "def.h"
-#include "utf32.h"
 #include "utf.h"
+#include "utf32.h"
 
-inline size_t CmlUTF32_getOctetsLength(u_int8_t *p_buff, size_t len)
+__Cml_INLINE size_t CmlUTF32_getOctetsLength(unsigned char *p_buff, size_t len)
 {
     return 4;
 }
 
-void CmlUTF32_LE_encode(u_int32_t code, u_int8_t *p_buff, size_t len)
+void CmlUTF32_LE_encode(CmlUTF_Code code, unsigned char *p_buff, size_t len)
 {
     if (len < 4) {
         errno = EINVAL;
@@ -44,7 +43,7 @@ void CmlUTF32_LE_encode(u_int32_t code, u_int8_t *p_buff, size_t len)
     p_buff[3] = code >> 24;
 }
 
-u_int32_t CmlUTF32_LE_decode(u_int8_t *p_buff, size_t len)
+CmlUTF_Code CmlUTF32_LE_decode(unsigned char *p_buff, size_t len)
 {
     if (len < 4) {
         errno = EINVAL;
@@ -54,7 +53,7 @@ u_int32_t CmlUTF32_LE_decode(u_int8_t *p_buff, size_t len)
     return (p_buff[3] << 24) | (p_buff[2] << 16) | (p_buff[1] << 8) | p_buff[0];
 }
 
-void CmlUTF32_BE_encode(u_int32_t code, u_int8_t *p_buff, size_t len)
+void CmlUTF32_BE_encode(CmlUTF_Code code, unsigned char *p_buff, size_t len)
 {
     if (len < 4) {
         errno = EINVAL;
@@ -67,7 +66,7 @@ void CmlUTF32_BE_encode(u_int32_t code, u_int8_t *p_buff, size_t len)
     p_buff[3] = code & 0xFF;
 }
 
-u_int32_t CmlUTF32_BE_decode(u_int8_t *p_buff, size_t len)
+CmlUTF_Code CmlUTF32_BE_decode(unsigned char *p_buff, size_t len)
 {
     if (len < 4) {
         errno = EINVAL;
@@ -77,27 +76,27 @@ u_int32_t CmlUTF32_BE_decode(u_int8_t *p_buff, size_t len)
     return (p_buff[0] << 24) | (p_buff[1] << 16) | (p_buff[2] << 8) | p_buff[3];
 }
 
-enum Cml_Endianness CmlUTF32_detectEndianness(u_int8_t *p_buff, size_t len)
+enum Cml_Endianness CmlUTF32_detectEndianness(unsigned char *p_buff, size_t len)
 {
     if (len < 4) {
         goto defaultEndian;
     }
 
     if (p_buff[0] == 0xFE && p_buff[1] == 0xFF && !(p_buff[2]) && !(p_buff[3])) {
-        return Cml_BE_ENDIANNESS;
+        return Cml_BE;
     } else if (!(p_buff[0]) && !(p_buff[1]) && p_buff[2] == 0xFF && p_buff[3] == 0xFE) {
-        return Cml_LE_ENDIANNESS;
+        return Cml_LE;
     } else {
         defaultEndian:
         #ifdef _WIN32
-            return Cml_LE_ENDIANNESS;
+            return Cml_LE;
         #else
-            return Cml_BE_ENDIANNESS;
+            return Cml_BE;
         #endif
     }
 }
 
-void CmlUTF32_new(struct CmlUTF_Buffer *p_utf, u_int8_t *p_buff, size_t offset, size_t len, enum Cml_Endianness endian)
+void CmlUTF32_new(struct CmlUTF_Buffer *p_utf, unsigned char *p_buff, size_t offset, size_t len, enum Cml_Endianness endian)
 {
     if (p_buff == NULL) {
         errno = EINVAL;

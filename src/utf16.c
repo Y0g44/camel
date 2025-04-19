@@ -18,42 +18,40 @@ along with this program; if not, see
 <https://www.gnu.org/licenses/>.
 */
 
-#include <errno.h>
 #include <stddef.h>
-#include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include "def.h"
 #include "utf.h"
 #include "utf16.h"
 
-static inline void CmlUTF16_encode32bits(u_int32_t code, u_int16_t *p_w1, u_int16_t *p_w2)
+static __Cml_INLINE void CmlUTF16_encode32bits(CmlUTF_Code code, unsigned short int *p_w1, unsigned short int *p_w2)
 {
-    u_int32_t u = code - 0x10000;
+    CmlUTF_Code u = code - 0x10000;
     *p_w1 = (u >> 10) + 0xD800;
     *p_w2 = (u & 0x3FF) + 0xDC00;
 }
 
-static inline u_int32_t CmlUTF16_decode32bits(u_int16_t w1, u_int16_t w2)
+static __Cml_INLINE CmlUTF_Code CmlUTF16_decode32bits(unsigned short int w1, unsigned short int w2)
 {
     return (((w1 - 0xD800) << 10) | (w2 - 0xDC00)) + 0x10000;
 }
 
-inline size_t CmlUTF16_getOctetsLengthBE(u_int8_t *p_buff, size_t len)
+__Cml_INLINE size_t CmlUTF16_getOctetsLengthBE(unsigned char *p_buff, size_t len)
 {
     return len >= 4 && (p_buff[0] & 0xFC) == 0xD8 && (p_buff[2] & 0xFC) == 0xDC
         ? 4
         : 2;
 }
 
-inline size_t CmlUTF16_getOctetsLengthLE(u_int8_t *p_buff, size_t len)
+__Cml_INLINE size_t CmlUTF16_getOctetsLengthLE(unsigned char *p_buff, size_t len)
 {
     return len >= 4 && (p_buff[1] & 0xFC) == 0xD8 && (p_buff[3] & 0xFC) == 0xDC
         ? 4
         : 2;
 }
 
-void CmlUTF16_encodeBE(u_int32_t code, u_int8_t *p_buff, size_t len)
+void CmlUTF16_encodeBE(CmlUTF_Code code, unsigned char *p_buff, size_t len)
 {
     if (code <= 0xFFFF) {
         if (len < 2) {
@@ -67,7 +65,7 @@ void CmlUTF16_encodeBE(u_int32_t code, u_int8_t *p_buff, size_t len)
             goto bufferTooSmallErr;
         }
 
-        u_int16_t w1, w2;
+        unsigned short int w1, w2;
         CmlUTF16_encode32bits(code, &w1, &w2);
         p_buff[0] = w1 >> 8;
         p_buff[1] = w1 & 0xFF;
@@ -80,7 +78,7 @@ void CmlUTF16_encodeBE(u_int32_t code, u_int8_t *p_buff, size_t len)
     errno = EINVAL;
 }
 
-u_int32_t CmlUTF16_decodeBE(u_int8_t *p_buff, size_t len)
+CmlUTF_Code CmlUTF16_decodeBE(unsigned char *p_buff, size_t len)
 {
     if (CmlUTF16_getOctetsLengthBE(p_buff, len) == 2) {
         if (len < 2) {
@@ -101,7 +99,7 @@ u_int32_t CmlUTF16_decodeBE(u_int8_t *p_buff, size_t len)
     return -1;
 }
 
-void CmlUTF16_encodeLE(u_int32_t code, u_int8_t *p_buff, size_t len)
+void CmlUTF16_encodeLE(CmlUTF_Code code, unsigned char *p_buff, size_t len)
 {
     if (code <= 0xFFFF) {
         if (len < 2) {
@@ -115,7 +113,7 @@ void CmlUTF16_encodeLE(u_int32_t code, u_int8_t *p_buff, size_t len)
             goto bufferTooSmallErr;
         }
 
-        u_int16_t w1, w2;
+        unsigned short int w1, w2;
         CmlUTF16_encode32bits(code, &w1, &w2);
         p_buff[0] = w1 & 0xFF;
         p_buff[1] = w1 >> 8;
@@ -128,7 +126,7 @@ void CmlUTF16_encodeLE(u_int32_t code, u_int8_t *p_buff, size_t len)
     errno = EINVAL;
 }
 
-u_int32_t CmlUTF16_decodeLE(u_int8_t *p_buff, size_t len)
+CmlUTF_Code CmlUTF16_decodeLE(unsigned char *p_buff, size_t len)
 {
     if (CmlUTF16_getOctetsLengthLE(p_buff, len) == 2) {
         if (len < 2) {
@@ -149,28 +147,28 @@ u_int32_t CmlUTF16_decodeLE(u_int8_t *p_buff, size_t len)
     return -1;
 }
 
-enum Cml_Endianness CmlUTF16_detectEndianness(u_int8_t *buff, size_t len)
+enum Cml_Endianness CmlUTF16_detectEndianness(unsigned char *buff, size_t len)
 {
     if (len < 2) {
         goto defaultEndian;
     }
 
     if (buff[0] == 0xFE && buff[1] == 0xFF) {
-        return Cml_BE_ENDIANNESS;
+        return Cml_BE;
     } else if (buff[0] == 0xFF && buff[1] == 0xFE) {
-        return Cml_LE_ENDIANNESS;
+        return Cml_LE;
     } else {
         defaultEndian:
         #ifdef _WIN32
-            return Cml_LE_ENDIANNESS;
+            return Cml_LE;
         #else
-            return Cml_BE_ENDIANNESS;
+            return Cml_BE;
         #endif
     }
 
 }
 
-void CmlUTF16_new(struct CmlUTF_Buffer *p_utf, u_int8_t *p_buff, size_t offset, size_t len, enum Cml_Endianness endian)
+void CmlUTF16_new(struct CmlUTF_Buffer *p_utf, unsigned char *p_buff, size_t offset, size_t len, enum Cml_Endianness endian)
 {
     if (p_buff == NULL) {
         errno = EINVAL;

@@ -21,17 +21,16 @@ along with this program; if not, see
 #ifndef __UTF16_H
 #define __UTF16_H
 
-#include <sys/types.h>
 #include "def.h"
 #include "utf.h"
 
-size_t CmlUTF16_getOctetsLengthBE(u_int8_t *p_buff, size_t len);
-size_t CmlUTF16_getOctetsLengthLE(u_int8_t *p_buff, size_t len);
-void CmlUTF16_encodeBE(u_int32_t code, u_int8_t *p_buff, size_t len);
-u_int32_t CmlUTF16_decodeBE(u_int8_t *p_buff, size_t len);
-void CmlUTF16_encodeLE(u_int32_t code, u_int8_t *p_buff, size_t len);
-u_int32_t CmlUTF16_decodeLE(u_int8_t *p_buff, size_t len);
-enum Cml_Endianness CmlUTF16_detectEndianness(u_int8_t *p_buff, size_t len);
-void CmlUTF16_new(struct CmlUTF_Buffer *p_utf, u_int8_t *p_buff, size_t offset, size_t len, enum Cml_Endianness endian);
+size_t CmlUTF16_getOctetsLengthBE(unsigned char *p_buff, size_t len);
+size_t CmlUTF16_getOctetsLengthLE(unsigned char *p_buff, size_t len);
+void CmlUTF16_encodeBE(CmlUTF_Code code, unsigned char *p_buff, size_t len);
+CmlUTF_Code CmlUTF16_decodeBE(unsigned char *p_buff, size_t len);
+void CmlUTF16_encodeLE(CmlUTF_Code code, unsigned char *p_buff, size_t len);
+CmlUTF_Code CmlUTF16_decodeLE(unsigned char *p_buff, size_t len);
+enum Cml_Endianness CmlUTF16_detectEndianness(unsigned char *p_buff, size_t len);
+void CmlUTF16_new(struct CmlUTF_Buffer *p_utf, unsigned char *p_buff, size_t offset, size_t len, enum Cml_Endianness endian);
 
 #endif
